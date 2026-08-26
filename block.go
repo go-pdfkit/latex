@@ -48,6 +48,8 @@ type emitter struct {
 	// justified says whether the document's lines reach the right margin,
 	// which is what makes a short line evidence of a paragraph ending.
 	justified bool
+	// leading is how far apart the document set its lines.
+	leading float64
 	// para is the paragraph being built and prev the line it last took.
 	para    []string
 	prev    line
@@ -535,6 +537,7 @@ func (e *emitter) measure(frames []frame) {
 	}
 	e.justified = total > 0 && reach*10 > total*6
 	e.levels = distinct(e.levels)
+	e.leading = e.leadingOf(frames)
 }
 
 // heaviest is the size the most ink was set in, which is the body size: a
@@ -568,7 +571,7 @@ func distinct(sizes []float64) []float64 {
 // preamble is the document's opening, which says only what the reconstruction
 // actually needs: the classes of symbol it may have written, the graphics it may
 // have referred to, and the shape of the page it came off.
-func preamble(opt Options, f frame, width, height float64, title string) string {
+func preamble(opt Options, f frame, width, height, size, leading float64, title string) string {
 	var b strings.Builder
 	class := opt.Class
 	if class == "" {
@@ -584,6 +587,15 @@ func preamble(opt Options, f frame, width, height float64, title string) string 
 	fmt.Fprintf(&b, "\\usepackage[paperwidth=%.1fpt,paperheight=%.1fpt,"+
 		"left=%.1fpt,right=%.1fpt,top=%.1fpt,bottom=%.1fpt]{geometry}\n",
 		width, height, l, r, t, bot)
+	if size > 0 && leading > 0 {
+		// The size the document was actually set at, rather than the ten
+		// point the class would otherwise choose. A paper whose body is nine
+		// point set on eleven, put back as ten on twelve, drifts a point and
+		// a half a line: by the twentieth line it is a whole line out, and
+		// every comparison with the original page is then comparing text
+		// against the gap between two other pieces of text.
+		fmt.Fprintf(&b, "\\AtBeginDocument{\\fontsize{%.2fpt}{%.2fpt}\\selectfont}\n", size, leading)
+	}
 	if title != "" {
 		fmt.Fprintf(&b, "\\title{%s}\n\\author{}\n\\date{}\n", title)
 	}
@@ -617,4 +629,42 @@ func textBlock(f frame, width, height float64) (left, right, top, bottom float64
 // why the hyphen itself is only removed when what follows is lowercase.
 func brokenWord(s string) bool {
 	return strings.HasSuffix(s, "-") && !strings.HasSuffix(s, "--")
+}
+
+// The bounds a believable leading falls within, as a multiple of the body size.
+// TeX sets a ten-point document on twelve-point leading; a paper set tighter
+// than the size itself, or looser than double, has a gap between paragraphs or
+// a figure in the way rather than a leading.
+const (
+	minLeading = 0.9
+	maxLeading = 2.0
+)
+
+// leadingOf is how far apart the document sets its lines, which together with
+// the body size is what decides where every line of the reconstruction lands.
+//
+// It is worth setting. A paper whose body is nine point set on eleven, put back
+// as LaTeX's ten on twelve, drifts a point and a half a line: by the twentieth
+// line it is a whole line out, and every measurement that compares the
+// reconstruction with the original page compares text against the gap between
+// two other pieces of text. Zero means the document did not say, and the class
+// decides.
+func (e *emitter) leadingOf(frames []frame) float64 {
+	var gaps []float64
+	for _, f := range frames {
+		for i := 1; i < len(f.lines); i++ {
+			a, b := f.lines[i-1], f.lines[i]
+			if a.size < e.body*0.98 || b.size < e.body*0.98 || a.left != b.left {
+				continue
+			}
+			if d := a.y - b.y; d > minLeading*e.body && d < maxLeading*e.body {
+				gaps = append(gaps, d)
+			}
+		}
+	}
+	if len(gaps) == 0 {
+		return 0
+	}
+	sort.Float64s(gaps)
+	return gaps[len(gaps)/2]
 }
