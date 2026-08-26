@@ -117,6 +117,103 @@ compile loses the whole document rather than the one equation.
   the real size; drawing programs often do not, and on such a page the size
   tests that find headings and scripts have nothing to work with.
 
+
+## Measured
+
+On arXiv source packages held locally: 282 papers, of which 194 were typeset by
+**tectonic** (a real TeX engine) into the PDFs this then read back — **5 107
+pages**. The other 88 would not compile at all: they want packages, classes or
+figures that tectonic could not supply. Everything below is the distribution
+over those 194, not one example of one.
+
+### Does it compile?
+
+**193 of 194 (99%)** of the reconstructions are accepted by tectonic.
+
+That number is the whole point of the repair pass, and it was not free. Over the
+same set of papers, as the faults were found and fixed, it went
+
+| | reconstructions that compile |
+|---|---|
+| before any repair | **27%** |
+| after the first repair pass | **55%** |
+| after three more faults were fixed | **97–99%** |
+
+The faults were: a script with nothing to be the script of; two scripts of one
+kind on one letter; a brace left open; a `\left` whose `\right` was on the next
+line or inside a different group; a prime, which TeX reads as a superscript, so
+a following subscript lands on a letter that already has one; a bare `\sqrt`
+with no radicand; and — the one that no amount of reading the code would have
+found — that `\rightarrow` begins with the six characters of `\right`, so the
+first version of the pass that strips an unmatched `\left` turned every limit in
+every document into the undefined command `\thetaarrow`.
+
+### How close is it to what the author wrote?
+
+The reconstruction is compared with the paper's own `.tex` files, with comments
+stripped, commands and braces removed, and mathematics compared separately.
+
+| measure | q1 | **median** | q3 |
+|---|---|---|---|
+| words, F1 of the bag | 0.55 | **0.66** | 0.75 |
+| word bigrams, F1 (order-sensitive) | 0.37 | **0.49** | 0.56 |
+| mathematics, F1 of the token multiset | 0.38 | **0.62** | 0.75 |
+
+The word figure is a floor rather than a score: the denominator is the author's
+whole source, which contains a preamble, macro definitions, commented-out
+paragraphs and a bibliography, none of which ever reach the page and none of
+which this could recover.
+
+### Round trip: typeset the reconstruction and compare the pixels
+
+The reconstruction is set again — once by the fleet's own `go-tex/engine`, once
+by tectonic — and each rendering is compared with the original page by
+`go-pdfkit/render`.
+
+The comparison is **where the ink lands**, not the mean pixel difference: a dark
+pixel in one page counts as matched when there is a dark pixel within two pixels
+of it in the other, scored as an F1. Mean absolute difference has a blind spot
+on a page that is mostly white — drawing the right thing one pixel off scores
+worse than drawing nothing — and this corpus shows it plainly, below.
+
+The engine's own fidelity has to be separated from the reconstruction's, so the
+same engine also sets the paper's **true source**, and the two are compared:
+
+| page one of 194 papers, ink F1 against the original | q1 | **median** | q3 |
+|---|---|---|---|
+| go-tex sets **the reconstruction** | 0.31 | **0.40** | 0.47 |
+| go-tex sets **the author's own source** | 0.18 | **0.34** | 0.44 |
+| tectonic sets **the reconstruction** | 0.25 | **0.32** | 0.41 |
+
+**The reconstruction lands closer to the original page than the true source
+does, in 193 of 194 papers**, when both are set by the fleet's engine. That is
+not a claim that the reconstruction is better than the source. It is a statement
+about what the engine can read: the reconstruction is plain `article` LaTeX with
+amsmath and graphicx, which go-tex sets in full, while a real arXiv paper pulls
+in classes and packages it drops. A reconstruction faithful enough to stand in
+for the source under an engine that cannot read the source is the useful thing
+being measured here.
+
+### The blind spot, demonstrated
+
+The same 194 comparisons, scored by **mean absolute pixel difference** instead:
+
+| | q1 | **median** | q3 |
+|---|---|---|---|
+| go-tex sets the reconstruction | 0.074 | **0.091** | 0.106 |
+| go-tex sets the author's own source | 0.054 | **0.076** | 0.095 |
+
+By that measure the reconstruction is *worse* in **194 of 194** — the exact
+opposite verdict. The reason is that go-tex sets less of the true source than of
+the reconstruction, so its page is emptier, and on a page that is 95% white an
+emptier page is nearer the original by mean difference however much of the
+document it has lost. Both numbers are reported because only one of them is
+answering the question.
+
+### What it costs
+
+Median 18 seconds per paper end to end, which is dominated by the two TeX
+compiles; the reconstruction itself is a fraction of a second per page.
 ## The gate
 
 `go vet` clean, `gofmt` clean, `CGO_ENABLED=0`, **exact 100% statement
