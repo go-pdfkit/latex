@@ -119,7 +119,7 @@ func Reconstruct(d *reader.Document, opt Options) (*Document, error) {
 		Pages: len(frames),
 	}
 	if len(frames) > 0 {
-		out.Preamble = preamble(opt, frames[0], width, height, e.title)
+		out.Preamble = preamble(opt, frames[0], width, height, e.body, e.leading, e.title)
 	}
 	if e.title != "" {
 		out.Body = "\\maketitle\n\n" + out.Body
