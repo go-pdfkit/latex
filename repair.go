@@ -32,15 +32,16 @@ import "strings"
 // was given.
 func repair(s string) string {
 	rs := []rune(s)
-	// A \left with no \right does not compile, and there is nothing to pair
-	// it with: the equation was cut in half by a line break. The delimiter
+	// A \left whose \right is missing, or is inside a group of its own,
+	// does not compile, and there is nothing to pair it with: the equation
+	// was cut in half by a line break or by a fraction bar. The delimiter
 	// itself is still right, only its growing is lost.
 	//
-	// The counting has to be done on whole control words. \rightarrow starts
-	// with the six characters of \right, and a pass that works on the text
-	// rather than on the tokens turns every limit in the document into the
+	// This is judged on whole control words. \rightarrow starts with the
+	// six characters of \right, and a pass that works on the text rather
+	// than on the tokens turns every limit in the document into the
 	// undefined command \thetaarrow.
-	strip := count(rs, "left") != count(rs, "right")
+	strip := !wellPaired(rs)
 	var b strings.Builder
 	// levels is the stack of groups, each remembering whether anything in it
 	// can carry a script and which scripts it has already been given.
@@ -107,22 +108,6 @@ func controlWord(rs []rune, i int) (string, int) {
 	return string(rs[i+1 : j]), j
 }
 
-// count is how many times a command appears, counting whole names only.
-func count(rs []rune, name string) int {
-	n := 0
-	for i := 0; i < len(rs); i++ {
-		if rs[i] != '\\' {
-			continue
-		}
-		word, next := controlWord(rs, i)
-		if word == name {
-			n++
-		}
-		i = next - 1
-	}
-	return n
-}
-
 // A group is what is known about one level of braces: whether it holds anything
 // a script could attach to, and which scripts have already attached.
 type group struct {
@@ -158,4 +143,40 @@ func (g *group) start() {
 // an empty group to hang the next one from.
 func (g *group) reset() {
 	g.sub, g.sup = false, false
+}
+
+// wellPaired reports whether every \left has its \right after it and inside the
+// same group.
+//
+// Counting them is not enough. A fraction whose numerator holds the \left and
+// whose denominator holds the \right has one of each and does not compile: TeX
+// reads each group on its own, and a \right it meets with no \left open is an
+// error however many there are elsewhere in the equation. That happens whenever
+// a grown delimiter straddles a fraction bar, which the decomposition splits.
+func wellPaired(rs []rune) bool {
+	open := []int{0}
+	for i := 0; i < len(rs); i++ {
+		switch rs[i] {
+		case '{':
+			open = append(open, 0)
+		case '}':
+			if len(open) == 1 || open[len(open)-1] != 0 {
+				return false
+			}
+			open = open[:len(open)-1]
+		case '\\':
+			word, next := controlWord(rs, i)
+			i = next - 1
+			switch word {
+			case "left":
+				open[len(open)-1]++
+			case "right":
+				if open[len(open)-1] == 0 {
+					return false
+				}
+				open[len(open)-1]--
+			}
+		}
+	}
+	return len(open) == 1 && open[0] == 0
 }

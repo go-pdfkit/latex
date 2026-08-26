@@ -64,3 +64,26 @@ func TestAPrimeIsASuperscript(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+func TestDelimitersThatDoNotNest(t *testing.T) {
+	// One of each, but the \right is in a group of its own: TeX reads each
+	// group on its own and refuses it.
+	if got := repair(`\frac{\left(a}{b\right)}`); got != `\frac{(a}{b)}` {
+		t.Errorf("got %q", got)
+	}
+	// A \right before its \left.
+	if got := repair(`a\right)b\left(`); got != `a)b(` {
+		t.Errorf("got %q", got)
+	}
+	// A brace that closes with nothing open is dropped before the pairing is
+	// judged, so the pairing sees what TeX will see.
+	if got := repair(`\left(a\right)`); got != `\left(a\right)` {
+		t.Errorf("got %q", got)
+	}
+	if got := repair(`{\left(a\right)}`); got != `{\left(a\right)}` {
+		t.Errorf("got %q", got)
+	}
+	if got := repair(`}\left(a\right)`); got != `(a)` {
+		t.Errorf("got %q", got)
+	}
+}
