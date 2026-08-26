@@ -120,15 +120,15 @@ compile loses the whole document rather than the one equation.
 
 ## Measured
 
-On arXiv source packages held locally: 282 papers, of which 194 were typeset by
-**tectonic** (a real TeX engine) into the PDFs this then read back — **5 107
-pages**. The other 88 would not compile at all: they want packages, classes or
+On arXiv source packages held locally: **399 papers attempted, 275 typeset by
+tectonic** (a real TeX engine) into the PDFs this then read back — **7 262
+pages**. The other 124 would not compile at all: they want packages, classes or
 figures that tectonic could not supply. Everything below is the distribution
-over those 194, not one example of one.
+over those 275, not one example of one.
 
 ### Does it compile?
 
-**193 of 194 (99%)** of the reconstructions are accepted by tectonic.
+**274 of 275 (99.6%)** of the reconstructions are accepted by tectonic.
 
 That number is the whole point of the repair pass, and it was not free. Over the
 same set of papers, as the faults were found and fixed, it went
@@ -155,9 +155,9 @@ stripped, commands and braces removed, and mathematics compared separately.
 
 | measure | q1 | **median** | q3 |
 |---|---|---|---|
-| words, F1 of the bag | 0.55 | **0.66** | 0.75 |
-| word bigrams, F1 (order-sensitive) | 0.37 | **0.49** | 0.56 |
-| mathematics, F1 of the token multiset | 0.38 | **0.62** | 0.75 |
+| words, F1 of the bag | 0.56 | **0.67** | 0.75 |
+| word bigrams, F1 (order-sensitive) | 0.37 | **0.49** | 0.58 |
+| mathematics, F1 of the token multiset | 0.32 | **0.61** | 0.75 |
 
 The word figure is a floor rather than a score: the denominator is the author's
 whole source, which contains a preamble, macro definitions, commented-out
@@ -179,14 +179,14 @@ worse than drawing nothing — and this corpus shows it plainly, below.
 The engine's own fidelity has to be separated from the reconstruction's, so the
 same engine also sets the paper's **true source**, and the two are compared:
 
-| page one of 194 papers, ink F1 against the original | q1 | **median** | q3 |
+| page one of 275 papers, ink F1 against the original | q1 | **median** | q3 |
 |---|---|---|---|
-| go-tex sets **the reconstruction** | 0.31 | **0.40** | 0.47 |
-| go-tex sets **the author's own source** | 0.18 | **0.34** | 0.44 |
-| tectonic sets **the reconstruction** | 0.25 | **0.32** | 0.41 |
+| go-tex sets **the reconstruction** | 0.32 | **0.400** | 0.47 |
+| go-tex sets **the author's own source** | 0.19 | **0.315** | 0.43 |
+| tectonic sets **the reconstruction** | 0.26 | **0.320** | 0.40 |
 
 **The reconstruction lands closer to the original page than the true source
-does, in 193 of 194 papers**, when both are set by the fleet's engine. That is
+does, in 274 of 275 papers**, when both are set by the fleet's engine. That is
 not a claim that the reconstruction is better than the source. It is a statement
 about what the engine can read: the reconstruction is plain `article` LaTeX with
 amsmath and graphicx, which go-tex sets in full, while a real arXiv paper pulls
@@ -196,14 +196,14 @@ being measured here.
 
 ### The blind spot, demonstrated
 
-The same 194 comparisons, scored by **mean absolute pixel difference** instead:
+The same 275 comparisons, scored by **mean absolute pixel difference** instead:
 
 | | q1 | **median** | q3 |
 |---|---|---|---|
-| go-tex sets the reconstruction | 0.074 | **0.091** | 0.106 |
-| go-tex sets the author's own source | 0.054 | **0.076** | 0.095 |
+| go-tex sets the reconstruction | 0.071 | **0.090** | 0.104 |
+| go-tex sets the author's own source | 0.054 | **0.075** | 0.093 |
 
-By that measure the reconstruction is *worse* in **194 of 194** — the exact
+By that measure the reconstruction is *worse* in **274 of 275** — the exact
 opposite verdict. The reason is that go-tex sets less of the true source than of
 the reconstruction, so its page is emptier, and on a page that is 95% white an
 emptier page is nearer the original by mean difference however much of the
