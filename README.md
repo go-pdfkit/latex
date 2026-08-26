@@ -100,6 +100,17 @@ compile loses the whole document rather than the one equation.
 - **Tables.** The rules are read (a fraction needs them) but nothing is made of
   a grid of them. A table comes back as the lines of text it is made of.
 - **Footnotes**, which come back as text at the foot of the page.
+- **Telling a class's italic from the author's `\emph`.** A theorem environment
+  sets its body in italic, and the page records only the italic. Every run of it
+  comes back as `\emph{...}`, which typesets the same and reads nothing like the
+  source: `\emph` is emitted about six times as often as the authors wrote it,
+  and `\textbf` about three. The same applies to any class that sets something
+  bold or italic on its own account.
+- **A figure drawn rather than placed.** `\includegraphics` comes back for a
+  picture the page places as an image; a plot that the author included as a
+  vector PDF is not an image at all but a few thousand drawing operations
+  inlined into the page, and this recovers about a third of the
+  `\includegraphics` commands in the corpus for that reason.
 - **Colour.**
 - **Accents.** A PDF draws `\hat{L}` as an L and a circumflex placed over it,
   two glyphs, and there is no way to write that back without knowing which glyph
@@ -164,6 +175,47 @@ whole source, which contains a preamble, macro definitions, commented-out
 paragraphs and a bibliography, none of which ever reach the page and none of
 which this could recover.
 
+
+### Which of it comes back, construct by construct
+
+Counting the commands in the 276 reconstructions against the commands in the
+`.tex` files they came from. The denominator is generous — it counts every
+`.tex` in the package, including files the main document never inputs, and
+macro definitions — so these are lower bounds on the right-hand side and the
+ratios understate. They are still the clearest statement of what works.
+
+| construct | in the reconstructions | in the sources |
+|---|---|---|
+| `\section{` | 1 331 | 2 707 |
+| `\subsection{` | 1 432 | 3 572 |
+| `\begin{equation}` | 4 673 | 9 516 |
+| `\frac{` | 6 607 | 24 066 |
+| `\sqrt{` | 994 | 3 796 |
+| `\left` | 1 832 | 17 238 |
+| `\includegraphics` | 1 082 | 3 094 |
+| `\texttt{` | 2 983 | 2 377 |
+| `\textbf{` | 20 270 | 6 893 |
+| `\emph{` | 40 253 | 6 424 |
+| `\begin{tabular}` | **0** | 746 |
+
+Three of those rows are worth reading carefully.
+
+**`\emph` and `\textbf` are over-emitted, by six times and three.** A theorem
+environment sets its whole body in italic, and this has no way to know that the
+italic came from `\begin{theorem}` rather than from `\emph` — so it writes one
+`\emph` per run of italic text. The page typesets the same; the source does not
+look like the author's. The same happens to `\textbf` wherever a class sets
+something bold on its own account. This costs on the comparison with the source
+and nothing at all on the comparison with the page.
+
+**`\left` comes back one time in nine.** That is mostly correct rather than
+mostly missing: a `\left(` around something that fits on one line is drawn from
+the ordinary roman font at the ordinary size, and is then indistinguishable from
+a plain `(`, which typesets identically. Only a delimiter that actually grew
+leaves evidence, and that is what this recovers.
+
+**`tabular` is zero, by choice.** Tables were the last item of the brief and
+were not reached; a table comes back as the lines of text it is made of.
 ### Round trip: typeset the reconstruction and compare the pixels
 
 The reconstruction is set again — once by the fleet's own `go-tex/engine`, once
