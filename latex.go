@@ -52,7 +52,10 @@ import (
 // every page of an article.
 type Options struct {
 	// First and Last are the range of pages to read, counting from one. Zero
-	// means the first page and the last respectively.
+	// means the first page and the last respectively. A range that names a
+	// page the document has not is an error rather than an empty document:
+	// a caller asking for page forty of a three-page paper has made a
+	// mistake and is better told about it.
 	First, Last int
 	// Class is the document class to write. Empty means article.
 	Class string
