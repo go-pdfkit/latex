@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/go-pdfkit/extract v0.1.0
-	github.com/go-pdfkit/reader v0.4.2
+	github.com/go-pdfkit/reader v0.5.0
 )
 
 require (
