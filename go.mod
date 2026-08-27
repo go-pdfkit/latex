@@ -3,8 +3,8 @@ module github.com/go-pdfkit/latex
 go 1.26.4
 
 require (
-	github.com/go-pdfkit/extract v0.1.0
-	github.com/go-pdfkit/reader v0.5.0
+	github.com/go-pdfkit/extract v0.2.0
+	github.com/go-pdfkit/reader v0.6.0
 )
 
 require (
