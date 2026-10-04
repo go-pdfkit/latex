@@ -1,6 +1,6 @@
 module github.com/go-pdfkit/latex
 
-go 1.26.4
+go 1.27.1
 
 require (
 	github.com/go-pdfkit/extract v0.3.0
