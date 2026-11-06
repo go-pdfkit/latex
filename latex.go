@@ -109,7 +109,7 @@ func Reconstruct(d *reader.Document, opt Options) (*Document, error) {
 	e := &emitter{opt: opt}
 	e.measure(frames)
 	for i := range frames {
-		frames[i].lines = stripRunningHeads(frames[i].lines, e.body)
+		frames[i].lines = stripRunningHeads(frames[i].lines, frames[i].rules, e.body)
 	}
 	for i, f := range frames {
 		e.opening = i == 0

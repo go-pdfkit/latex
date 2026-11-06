@@ -115,11 +115,16 @@ compile loses the whole document rather than the one equation.
 - **Tables.** The rules are read (a fraction needs them) but nothing is made of
   a grid of them. A table comes back as the lines of text it is made of.
 - **Footnotes**, which come back as text at the foot of the page — as their own
-  paragraph, set apart from the body. They were briefly folded INTO the body:
-  a footnote separator satisfies every test for a fraction bar, so the footnote
-  was read as the other half of a displayed fraction and interleaved with the
-  last line of text glyph by glyph. A band has to be full size to be half a
-  fraction now, which is what `sharesBar` was always for.
+  paragraph, set apart from the body. That took two fixes, and the first one
+  alone made things worse. A footnote separator satisfies every test for a
+  fraction bar, so a footnote was read as the other half of a displayed
+  fraction and interleaved with the last line of text glyph by glyph; a band
+  has to be full size to be half a fraction now, which is what `sharesBar` was
+  always for. But freeing the footnote made it the last line of the page, on
+  its own — and a footnote is short, set below the text and no larger than the
+  body, which is every test for a running foot, so it was then thrown away
+  silently. A wide rule between the last line and the one above it is a
+  `\footnoterule` and keeps it.
 - **Telling a class's italic from the author's `\emph`.** A theorem environment
   sets its body in italic, and the page records only the italic. Every run of it
   comes back as `\emph{...}`, which typesets the same and reads nothing like the

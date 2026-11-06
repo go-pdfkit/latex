@@ -203,14 +203,40 @@ const headFootWidth = 0.4
 // the source: LaTeX put them there, and writing them back would put them on the
 // page twice â once as text in the middle of a paragraph and once again by the
 // page style.
-func stripRunningHeads(lines []line, body float64) []line {
+func stripRunningHeads(lines []line, rules []rule, body float64) []line {
 	for len(lines) > 1 && isolated(lines[0], lines[1], body) {
 		lines = lines[1:]
 	}
-	for len(lines) > 1 && isolated(lines[len(lines)-1], lines[len(lines)-2], body) {
+	for len(lines) > 1 && isolated(lines[len(lines)-1], lines[len(lines)-2], body) &&
+		!underRule(lines[len(lines)-1], lines[len(lines)-2], rules) {
 		lines = lines[:len(lines)-1]
 	}
 	return lines
+}
+
+// underRule reports whether a wide rule lies between the last line and the one
+// above it — a footnote separator, which a running foot never has.
+//
+// ⛔⛔ THIS IS THE SECOND HALF OF THE FOOTNOTE FIX, AND WITHOUT IT THE FIRST
+// HALF MADE THINGS WORSE. Freeing a footnote from the line above it (#18) made
+// it the last line of the page, on its own — and a footnote then answers every
+// test isolated() makes: short, set well below the text, no larger than the
+// body. So it was thrown away. A garbled footnote is visible and a dropped one
+// is not, so the net of the two changes was a reconstruction that quietly lost
+// a sentence the page carries.
+//
+// A rule is the right signal because it is what LaTeX actually puts there:
+// \footnoterule is drawn above the notes and nothing is drawn above a running
+// foot. Where a page's own table happens to end in a wide rule, a page number
+// below it is kept rather than dropped — which is the error worth making, since
+// a stray "7" in the source is seen and removed, and a missing footnote is not.
+func underRule(foot, above line, rules []rule) bool {
+	for _, r := range rules {
+		if r.wide() && r.midY() > foot.y && r.midY() < above.y {
+			return true
+		}
+	}
+	return false
 }
 
 // isolated reports whether an edge line is short, set well away from its
