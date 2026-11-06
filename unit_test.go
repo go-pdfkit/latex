@@ -217,19 +217,26 @@ func TestPageNumbersAndRunningHeads(t *testing.T) {
 		return line{y: y, size: 10, x0: 20, x1: x1, left: 20, right: 200}
 	}
 	lines := []line{mk(190, 30), mk(160, 200), mk(148, 200), mk(20, 30)}
-	got := stripRunningHeads(lines, 10)
+	got := stripRunningHeads(lines, nil, 10)
 	if len(got) != 2 || got[0].y != 160 {
 		t.Errorf("got %+v", got)
 	}
 	// A heading at the top of a page is short and set off from what follows
 	// it too, and must not be thrown away with the running heads.
 	head := line{y: 190, size: 14, x0: 20, x1: 60, left: 20, right: 200}
-	if got := stripRunningHeads([]line{head, mk(160, 200)}, 10); len(got) != 2 {
+	if got := stripRunningHeads([]line{head, mk(160, 200)}, nil, 10); len(got) != 2 {
 		t.Errorf("the heading was stripped: %+v", got)
 	}
 	// A single line is left alone.
-	if got := stripRunningHeads(lines[:1], 10); len(got) != 1 {
+	if got := stripRunningHeads(lines[:1], nil, 10); len(got) != 1 {
 		t.Errorf("got %+v", got)
+	}
+	// ⛔ And the SAME foot is kept when a wide rule sits above it, because that
+	// is a footnote separator rather than nothing at all. The control for the
+	// line above: identical input, one rule added, opposite answer.
+	sep := []rule{{x0: 20, y0: 40, x1: 120, y1: 40.4}}
+	if got := stripRunningHeads(lines, sep, 10); len(got) != 3 || got[len(got)-1].y != 20 {
+		t.Errorf("a foot under a separator rule was still stripped: %+v", got)
 	}
 }
 
