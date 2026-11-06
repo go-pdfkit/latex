@@ -240,6 +240,28 @@ const fracReach = 2.4
 // displayed equation comes out as three separate lines - a d, the rest of the
 // equation, and a dt - which compiles, and is wrong.
 func sharesBar(l line, b band, rules []rule) bool {
+	// ⛔⛔ BOTH HALVES OF A DISPLAYED FRACTION ARE SET AT THE SAME SIZE, and
+	// that is this test's own reason for existing: the comment above says a
+	// superscript is recognised by being SMALLER, and that this exists for the
+	// case where both halves are full size so nothing else tells them from two
+	// ordinary lines. Without the size test it also accepts something smaller,
+	// which is a case the script paths in accepts already cover — and which a
+	// FOOTNOTE is.
+	//
+	// Measured on a real page (#18): a footnote separator runs x 72.00..259.90
+	// at y 83.14, the body's last line sits on y=95.89 at 10pt and the footnote
+	// on y=73.76 at 8pt. The rule is wide, its middle falls between the two
+	// baselines, the footnote lies within its ends and is more than half its
+	// width — so every test below passed and the footnote was folded into the
+	// line above it, interleaved glyph by glyph in x order. The paragraph came
+	// out as "comme dans1u. nRunnativmige awtaesumr.pur-Go".
+	//
+	// It passed by 1.87 points: the gap is 22.13 and fracReach allows 24. A
+	// footnote set one line further down would have been read correctly, which
+	// is why this went unnoticed.
+	if b.size < scriptSize*l.size {
+		return false
+	}
 	if abs(b.y-l.y) > fracReach*l.size {
 		return false
 	}
