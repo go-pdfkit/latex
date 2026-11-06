@@ -7,12 +7,27 @@
 **Reconstruct LaTeX source from a PDF.** Pure Go, no cgo, no dependencies
 outside the fleet.
 
+```sh
+go install github.com/go-pdfkit/latex/cmd/pdf2latex@latest
+
+pdf2latex paper.pdf                  # writes paper.tex and its figures
+pdf2latex --pages 1-4 paper.pdf out/ # four pages of it, into a directory
+pdf2latex -o - paper.pdf             # to standard output
+```
+
 ```go
 d, _ := reader.Open(pdfBytes)
 doc, _ := latex.Reconstruct(d, latex.Options{})
 os.WriteFile("out.tex", []byte(doc.String()), 0o644)
 doc.WriteFiles(".") // the pictures the \includegraphics commands name
 ```
+
+The command writes a comment at the top of the source saying it is a
+reconstruction and how many pages it read, because the file outlives the
+terminal: whoever opens `paper.tex` next never saw what the command printed.
+It exits 0 when the source was written, 1 when it was not, and 2 on a usage
+error, and it refuses to overwrite a file that is already there unless given
+`-f`.
 
 A PDF that came from TeX does not contain a document. It contains the marks TeX
 made putting one on paper: glyphs at absolute positions, from fonts whose names
@@ -99,7 +114,12 @@ compile loses the whole document rather than the one equation.
   page that says otherwise. Same for `\ref` and `\label`.
 - **Tables.** The rules are read (a fraction needs them) but nothing is made of
   a grid of them. A table comes back as the lines of text it is made of.
-- **Footnotes**, which come back as text at the foot of the page.
+- **Footnotes**, which come back as text at the foot of the page — as their own
+  paragraph, set apart from the body. They were briefly folded INTO the body:
+  a footnote separator satisfies every test for a fraction bar, so the footnote
+  was read as the other half of a displayed fraction and interleaved with the
+  last line of text glyph by glyph. A band has to be full size to be half a
+  fraction now, which is what `sharesBar` was always for.
 - **Telling a class's italic from the author's `\emph`.** A theorem environment
   sets its body in italic, and the page records only the italic. Every run of it
   comes back as `\emph{...}`, which typesets the same and reads nothing like the
