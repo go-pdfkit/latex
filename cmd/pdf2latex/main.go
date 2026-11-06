@@ -40,9 +40,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// osExit is replaceable so that a test can drive main itself rather than only
+// the command under it. What main does is small, and it is still the one path
+// every real invocation takes.
+var osExit = os.Exit
+
 func main() {
 	if err := RootCmd().Execute(); err != nil {
-		os.Exit(1)
+		osExit(1)
 	}
 }
 
