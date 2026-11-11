@@ -3,7 +3,7 @@ module github.com/go-pdfkit/latex
 go 1.27.1
 
 require (
-	github.com/go-pdfkit/extract v0.10.0
+	github.com/go-pdfkit/extract v0.11.0
 	github.com/go-pdfkit/reader v0.10.0
 	github.com/spf13/cobra v1.10.2
 )

@@ -8,8 +8,8 @@ github.com/go-opentype/fonts v0.14.0 h1:WHw7k9gkHT1pu9B2yyvd0FWyQqn/4NKFQoKhvMYt
 github.com/go-opentype/fonts v0.14.0/go.mod h1:od2QcmdpKo7QCqo6Jb16y4GULk+h2Hhfq6x3xfvn62Q=
 github.com/go-opentype/opentype v0.17.0 h1:yDLYLg/nUdfSSzm1Yg8t67racyFsamDEtS1gSR7xk1E=
 github.com/go-opentype/opentype v0.17.0/go.mod h1:RujaDgR2h/ErgMkc5y/KYbX8NJtWw3yLRtVxbCfdvFQ=
-github.com/go-pdfkit/extract v0.10.0 h1:9dezD5WqsMnQ9amqRaxADrjpf2pbe7TTMFUZwHXCTHU=
-github.com/go-pdfkit/extract v0.10.0/go.mod h1:MNOx6Y0g//XSSx0lztuLUPDy4y5yubaNVsxJkVq3F6k=
+github.com/go-pdfkit/extract v0.11.0 h1:qc1/sahrW/AWDL75GjE9qUyoY6jSuhq5th7lGQKG2IY=
+github.com/go-pdfkit/extract v0.11.0/go.mod h1:MNOx6Y0g//XSSx0lztuLUPDy4y5yubaNVsxJkVq3F6k=
 github.com/go-pdfkit/pdffont v0.4.0 h1:3CV2HnmUGHiIYuZ5dJWRLKvi7hMHGWS1RjgNYkEZ0Gk=
 github.com/go-pdfkit/pdffont v0.4.0/go.mod h1:l7es3IPbKewQF+sSgPh/bQL18jSewoI0cMjttk7uPlc=
 github.com/go-pdfkit/reader v0.10.0 h1:Wi0GCUADMZFxL9iuVwxuiDhv10nGxbZZjNKJIqtj63E=
